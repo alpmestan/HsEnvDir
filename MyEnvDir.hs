@@ -3,6 +3,7 @@ import System.Directory
 import System.Process
 import System.IO
 import System.Environment
+import System.Posix.Env
 import Control.Concurrent
 
 main = do
@@ -12,17 +13,13 @@ main = do
 	files <- getDirectoryContents envdir
 
 	let envFiles = [ joinPath [envdir, fp] | fp <- files, validEnvFile fp ] 
-	printEnvDirContent envFiles
-	printFileContent $ head envFiles
+	exportEnv envFiles
 	(_, _, _, handle) <- createProcess(proc (head command) (tail command))
 	waitForProcess handle
 
-printEnvDirContent :: [FilePath] -> IO ()
-printEnvDirContent files = do
-	print files
 
 validEnvFile :: FilePath -> Bool
 validEnvFile = not . hasExtension 
 
-printFileContent :: FilePath -> IO ()
-printFileContent fp = readFile fp >>= putStr
+exportEnv :: [FilePath] -> IO ()
+exportEnv = mapM_ (\key -> readFile key >>= (\val -> putEnv $ takeFileName key ++ "=" ++ val))

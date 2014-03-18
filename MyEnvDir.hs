@@ -1,21 +1,28 @@
 import System.FilePath
 import System.Directory
+import System.Process
+import System.IO
+import System.Environment
+import Control.Concurrent
 
-envdir = "./env"
 main = do
-	putStrLn "Hello!"
-	files <- getDirectoryContents envdir
-	let validFiles = [ fp | fp <- files, validEnvFile fp ] 
-	printEnvDirContent validFiles
-	printFileContent $ head validFiles
+	args <- getArgs
 
+	let (envdir, command) = (head args, tail args)
+	files <- getDirectoryContents envdir
+
+	let envFiles = [ joinPath [envdir, fp] | fp <- files, validEnvFile fp ] 
+	printEnvDirContent envFiles
+	printFileContent $ head envFiles
+	(_, _, _, handle) <- createProcess(proc (head command) (tail command))
+	waitForProcess handle
 
 printEnvDirContent :: [FilePath] -> IO ()
 printEnvDirContent files = do
 	print files
 
 validEnvFile :: FilePath -> Bool
-validEnvFile = not . hasExtension
+validEnvFile = not . hasExtension 
 
 printFileContent :: FilePath -> IO ()
-printFileContent fp = readFile (joinPath [envdir, fp]) >>= putStr
+printFileContent fp = readFile fp >>= putStr

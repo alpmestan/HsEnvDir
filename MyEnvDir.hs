@@ -15,7 +15,7 @@ main = do
 
 	let envFiles = [ joinPath [envdir, fp] | fp <- files, validEnvFile fp ] 
 	exportEnv envFiles
-	(_, _, _, handle) <- createProcess(proc (head command) (tail command))
+	(_, _, _, handle) <- createProcess $ proc (head command) (tail command) 
 	_ <- waitForProcess handle
 	exitSuccess
 

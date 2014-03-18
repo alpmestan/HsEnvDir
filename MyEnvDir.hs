@@ -3,6 +3,7 @@ import System.Directory
 import System.Process
 import System.IO
 import System.Environment
+import System.Exit
 import System.Posix.Env
 import Control.Concurrent
 
@@ -15,7 +16,8 @@ main = do
 	let envFiles = [ joinPath [envdir, fp] | fp <- files, validEnvFile fp ] 
 	exportEnv envFiles
 	(_, _, _, handle) <- createProcess(proc (head command) (tail command))
-	waitForProcess handle
+	_ <- waitForProcess handle
+	exitSuccess
 
 
 validEnvFile :: FilePath -> Bool
